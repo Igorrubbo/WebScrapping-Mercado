@@ -5,7 +5,7 @@ from openpyxl import Workbook, load_workbook
 
 
 # Carregar planilha e produtos com openpyxl
-arquivo = "Arquivos excel\lista de mercado.xlsx"
+arquivo = r"C:\Users\Igor\Documents\PythonEstudos\WebScrapping\Arquivos excel\lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
@@ -25,7 +25,7 @@ def checar_produto():
 
 # Pegar informações do site
 for produto in lista_produtos:
-    url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(" ", "-")
+    url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(' ', '-') + '_OrderId_PRICE_NoIndex_True'
     response = requests.get(url_dinamica)
     site = BeautifulSoup(response.text, 'html.parser')
 
@@ -42,26 +42,31 @@ for produto in lista_produtos:
     itens = site.findAll('div', attrs={'class': classe_dinamica})
 
     for item in itens[0:3]:
-        # Dados dos itens encontrados
+        #Dados dos itens encontrados
         titulo = item.find('h2', attrs={'class': 'ui-search-item__title'})
-        preco_reais = item.find('span', attrs={'class': "price-tag-fraction"})
-        preco_centavos = item.find('span', attrs={'class': "price-tag-cents"})
         link = item.find('a', attrs={'class': 'ui-search-link'})
         link_corrigido = link.text, link['href']
+        preco = item.find('div', attrs={'class': "ui-search-price__second-line"})   #Se tiver desconto garantir que o preço com desconto seja pego
+        preco_reais = preco.find('span', attrs={'class': "price-tag-fraction"})
+        preco_centavos = preco.find('span', attrs={'class': "price-tag-cents"})
+        desconto = item.find('span', attrs={'class': 'ui-search-price__discount'})  #Se tiver desconto recolher qual é o % de desconto
 
         # Printar os dados
         if checar_produto() != False:
             print("Título do produto:", titulo.text)
-            ws['C' + str((lista_produtos.index(produto)+3))] = titulo.text
+            ws['D' + str((lista_produtos.index(produto)+3))] = titulo.text
             # Condição para caso não tenha centavos no preço
-            if (preco_centavos):
+            if preco_centavos:
                 print('Preço: R$ ' + preco_reais.text + ',' + preco_centavos.text)
                 ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
             else:
                 print('Preço: R$ ' + preco_reais.text)
                 ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
             print('Link do produto:' + link_corrigido[1])
-            ws['D' + str((lista_produtos.index(produto)+3))] = link_corrigido[1]
+            ws['E' + str((lista_produtos.index(produto)+3))] = link_corrigido[1]
+            if desconto:
+                print(desconto.text)
+                ws['C' + str((lista_produtos.index(produto)+3))] = desconto.text
             print()
         else:
             continue
