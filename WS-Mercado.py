@@ -5,7 +5,7 @@ from openpyxl import Workbook, load_workbook
 
 
 # Carregar planilha e produtos com openpyxl
-arquivo = r"C:\Users\Igor\Documents\PythonEstudos\WebScrapping\Arquivos excel\lista de mercado.xlsx"
+arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
