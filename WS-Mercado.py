@@ -52,16 +52,16 @@ for produto in lista_produtos:
         # Printar os dados
         if checar_produto() != False:
             print("Título do produto:", titulo.text)
-            #ws['C' + str((lista_produtos.index(produto)+3))] = titulo.text
+            ws['C' + str((lista_produtos.index(produto)+3))] = titulo.text
             # Condição para caso não tenha centavos no preço
             if (preco_centavos):
                 print('Preço: R$ ' + preco_reais.text + ',' + preco_centavos.text)
-                #ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
+                ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
             else:
                 print('Preço: R$ ' + preco_reais.text)
-                #ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
+                ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
             print('Link do produto:' + link_corrigido[1])
-            #ws['D' + str((lista_produtos.index(produto)+3))] = link_corrigido[1]
+            ws['D' + str((lista_produtos.index(produto)+3))] = link_corrigido[1]
             print()
         else:
             continue
