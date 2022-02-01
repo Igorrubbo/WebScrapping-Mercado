@@ -33,7 +33,8 @@ for produto in lista_produtos:
     resultado = site.find('div', attrs={'class': 'ui-search-result__wrapper'})
     primeiro_resultado = list(resultado.children)[0]
     classe_dinamica = str(primeiro_resultado).split('>')[0][12:-1]
-    ##Garantir que a classe encontrada não seja a classe de produtos de propaganda
+
+    #Garantir que a classe encontrada não seja a classe de propagandas de produtos
     i = 0
     while "advertisement" in classe_dinamica:
         i += 1
@@ -68,8 +69,9 @@ for produto in lista_produtos:
                 print(desconto.text)
                 ws['C' + str((lista_produtos.index(produto)+3))] = desconto.text
             print()
+            break
         else:
             continue
 
-wb.save(filename='Arquivos excel\lista de mercado.xlsx')
+wb.save(filename = arquivo)
 wb.close()
