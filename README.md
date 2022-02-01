@@ -14,3 +14,4 @@ A implementar:
 - Realizar WebScrapping de um mercado local
 - Comparar preços entre o mercado local e o Mercado Livre
 - Adicionar opção de verificar preços de produtos que não são de mercado, como: celular, computador, carro e outros.
+  - O programa faz isso em parte, porém para produtos com preços elevados, como carro, ele apresenta problemas.
