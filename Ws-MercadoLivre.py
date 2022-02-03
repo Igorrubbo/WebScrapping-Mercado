@@ -12,7 +12,6 @@ lista_produtos = []
 coluna_link = ws['A'][2:]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
-print(lista_produtos)
 
 # Função para procurar se o produto solicitado é o mesmo que o encontrado
 def checar_produto():
