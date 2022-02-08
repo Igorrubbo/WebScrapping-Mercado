@@ -2,7 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 #import pandas as pd
 from openpyxl import Workbook, load_workbook
+import time
 
+#Checar tempo de execução do programa
+start_time = time.time()
 
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
@@ -61,7 +64,7 @@ for produto in lista_produtos:
                 ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
             else:
                 print('Preço: R$ ' + preco_reais.text)
-                ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text + ',' + preco_centavos.text
+                ws['B' + str((lista_produtos.index(produto)+3))] = preco_reais.text
             print('Link do produto:' + link_corrigido[1])
             ws['E' + str((lista_produtos.index(produto)+3))] = link_corrigido[1]
             if desconto:
@@ -74,3 +77,4 @@ for produto in lista_produtos:
 
 wb.save(filename = arquivo)
 wb.close()
+print("--- %s seconds ---" % (time.time() - start_time))
