@@ -1,9 +1,10 @@
+from bs4 import BeautifulSoup
+from openpyxl import Workbook, load_workbook
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from bs4 import BeautifulSoup
-from openpyxl import Workbook, load_workbook
-#import os
+
+
 import time
 import requests
 
@@ -20,14 +21,6 @@ for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
 print(lista_produtos)
 
-# Função para procurar se o produto solicitado é o mesmo que o encontrado
-def checar_produto():
-    nova_lista = produto.split()
-    for palavra in nova_lista:
-        resultado = (' ' + palavra.upper() + ' ') in (' ' + titulo_nagumo.text.upper() + ' ')
-        if resultado == False:
-            return False
-
 # Instanciar um objeto Options e adicionar o argumento "--headless"
 opts = webdriver.ChromeOptions()
 opts.add_argument(" --headless")
@@ -37,46 +30,67 @@ opts.add_experimental_option('excludeSwitches', ['enable-logging'])
 chrome_driver = Service(r'C:\Program Files (x86)\Chromedriver\chromedriver.exe')
 driver = webdriver.Chrome(options = opts, service = chrome_driver)
 
-for produto in lista_produtos:
-    # Carregar a página HTML e realizar uma pausa para a página poder carregar
-    url_dinamica_nagumo = r'http://www.nagumo.com.br/atibaia-lj32-atibaia-alvinopolis-avenida-prof-carlos-alberto-de-carvalho/busca/' + produto.replace(' ', '-')
-    driver.get(url_dinamica_nagumo)
-    #driver.get(r'C:\Users\Igor\Documents\PythonEstudos\WebScrapping\WS-Mercado\HTML para teste\not-milk - Supermercado Nagumo - Compre Online em Atibaia_SP.html')
-    #driver.get(r'http://www.nagumo.com.br/atibaia-lj32-atibaia-alvinopolis-avenida-prof-carlos-alberto-de-carvalho/busca/not-milk')
-    time.sleep(2.5)
+def webscrape_nagumo():
+    for produto in lista_produtos:
+        # Carregar a página HTML e realizar uma pausa para a página poder carregar
+        url_dinamica_nagumo = r'http://www.nagumo.com.br/atibaia-lj32-atibaia-alvinopolis-avenida-prof-carlos-alberto-de-carvalho/busca/' + produto.replace(' ', '-')
+        driver.get(url_dinamica_nagumo)
+        time.sleep(2.5)
 
-    # Começar a usar o Beautiful Soup para puxar os dados
-    soup_file = driver.page_source
-    site_nagumo = BeautifulSoup(soup_file, 'html.parser')
-    main = site_nagumo.findAll(class_ = 'product-grid-default product-grid-default-4 content-dailySale-list-products-product')
+        # Começar a usar o Beautiful Soup para puxar os dados
+        soup_file = driver.page_source
+        site_nagumo = BeautifulSoup(soup_file, 'html.parser')
+        main = site_nagumo.findAll(class_ = 'product-grid-default product-grid-default-4 content-dailySale-list-products-product')
 
-    for item in main[0:3]:
+        # Função para procurar se o produto solicitado é o mesmo que o encontrado
+        def checar_produto():
+            nova_lista = produto.split()
+            for palavra in nova_lista:
+                resultado = (' ' + palavra.upper() + ' ') in (' ' + titulo_nagumo.text.upper() + ' ')
+                if resultado == False:
+                    return False
 
-        titulo_auxiliar = item.find(class_ = 'txt-desc-product-itemtext-muted txt-desc-product-item')
-        titulo_nagumo = titulo_auxiliar.find(class_ = 'list-product-link')
-        link_nagumo = item.find(class_ = 'list-product-link')
-        preco_total_nagumo = item.find(class_ ='area-bloco-preco bloco-preco pr-0')
-        desconto_nagumo = item.find(class_ = 'promotion-tip-text')
+        for item in main[0:6]:
 
-        if checar_produto() != False:
-            print('Título do produto: ' + titulo_nagumo.text)
-            ws['H' + str((lista_produtos.index(produto)+3))] = titulo_nagumo.text
+            titulo_auxiliar = item.find(class_ = 'txt-desc-product-itemtext-muted txt-desc-product-item')
+            titulo_nagumo = titulo_auxiliar.find(class_ = 'list-product-link')
+            link_nagumo = item.find(class_ = 'list-product-link')
+            preco_total_nagumo = item.find(class_ ='area-bloco-preco bloco-preco pr-0')
+            preco_oferta = item.find(class_ ='preco-oferta')
+            desconto_online = item.find(class_ = 'promotion-tip-text')
+            desconto_nagumo = item.find(class_ = 'discount-tag')
 
-            print('Link do produto: ' + 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1])
-            ws['I' + str((lista_produtos.index(produto)+3))] = 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1]
+            if checar_produto() != False:
+                print('Título do produto: ' + titulo_nagumo.text)
+                ws['H' + str((lista_produtos.index(produto)+3))] = titulo_nagumo.text
 
-            print('Preço do produto: ' + preco_total_nagumo.text)
-            ws['F' + str((lista_produtos.index(produto)+3))] = preco_total_nagumo.text
-            if desconto_nagumo:
-                print('Desconto de código:' + desconto_nagumo.text)
-                ws['G' + str((lista_produtos.index(produto)+3))] = desconto_nagumo.text
+                print('Link do produto: ' + 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1])
+                ws['I' + str((lista_produtos.index(produto)+3))] = 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1]
 
-            print('---------------------------------------------------')
+                if preco_oferta:
+                    print('Preço do produto com desconto: R$' + preco_total_nagumo.text.split('R$')[1])
+                    ws['F' + str((lista_produtos.index(produto)+3))] = preco_oferta.text
+                else:                
+                    print('Preço do produto: ' + preco_total_nagumo.text)
+                    ws['F' + str((lista_produtos.index(produto)+3))] = preco_total_nagumo.text
+                if desconto_online:
+                    print('Desconto online existente, código:' + desconto_online.text)
+                    ws['G' + str((lista_produtos.index(produto)+3))] = desconto_online.text
+                if desconto_nagumo:
+                    print('Desconto aplicado: ' + desconto_nagumo.text)
+                    ws['G' + str((lista_produtos.index(produto)+3))] = desconto_nagumo.text                    
 
-            break
-        else:
-            continue
+                print('---------------------------------------------------')
 
-wb.save(filename = arquivo)
-wb.close()
+                break
+            else:
+                ws['F' + str((lista_produtos.index(produto)+3))] = '---'
+                ws['G' + str((lista_produtos.index(produto)+3))] = '---'
+                ws['H' + str((lista_produtos.index(produto)+3))] = 'Produto não encontrado'
+                ws['I' + str((lista_produtos.index(produto)+3))] = '---'
+
+    wb.save(filename = arquivo)
+    wb.close()
+
+webscrape_nagumo()
 print("--- %s seconds ---" % (time.time() - start_time))
