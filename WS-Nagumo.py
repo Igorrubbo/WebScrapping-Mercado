@@ -3,13 +3,26 @@ from openpyxl import Workbook, load_workbook
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
+import mysql.connector
+from datetime import date
 
 import time
-import requests
 
 #Checar tempo de execução do programa
 start_time = time.time()
+
+#Data do dia de hoje em formato dd/mm/yy
+today = date.today()
+data_hoje = "'" + today.strftime("%y-%m-%d") + "'"
+
+#conexão com db do google cloud
+db = mysql.connector.connect(
+    host = '34.151.251.243',
+    user = 'root',
+    passwd = '459588asd',
+    database = 'Teste',
+)
+mycursor = db.cursor()
 
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
@@ -46,51 +59,54 @@ def webscrape_nagumo():
         def checar_produto():
             nova_lista = produto.split()
             for palavra in nova_lista:
-                resultado = (' ' + palavra.upper() + ' ') in (' ' + titulo_nagumo.text.upper() + ' ')
+                resultado = (' ' + palavra.upper() + ' ') in (' ' + titulo_html.text.upper() + ' ') #tenho que usar o titulo_html pois preciso colocar o valor da variável titulo_nagumo entre aspas simples para o MYSQL
                 if resultado == False:
                     return False
 
         for item in main[0:6]:
-
             titulo_auxiliar = item.find(class_ = 'txt-desc-product-itemtext-muted txt-desc-product-item')
-            titulo_nagumo = titulo_auxiliar.find(class_ = 'list-product-link')
-            link_nagumo = item.find(class_ = 'list-product-link')
-            preco_total_nagumo = item.find(class_ ='area-bloco-preco bloco-preco pr-0')
+            titulo_html = titulo_auxiliar.find(class_ = 'list-product-link') 
+            titulo_nagumo = "'" + titulo_html.text + "'"
+            link = item.find(class_ = 'list-product-link')
+            link_nagumo = "'" + 'http://www.nagumo.com.br' + (link.text, link['href'])[1] + "'"
+            #Verificação se existe oferta, caso exista usar o preço correto
+            preco_total = item.find(class_ ='area-bloco-preco bloco-preco pr-0')
             preco_oferta = item.find(class_ ='preco-oferta')
+            if preco_oferta:
+                preco_nagumo = "'" + preco_oferta.text.split('R$')[1] + "'"
+                preco_nagumo = preco_nagumo.replace(",", ".").replace(" ", "")
+            else:
+                preco_nagumo = "'" + preco_total.text.split('R$')[1] + "'"
+                preco_nagumo = preco_nagumo.replace(",", ".").replace(" ", "")
+            #Verificação se existe desconto, caso exista extrair a informação
             desconto_online = item.find(class_ = 'promotion-tip-text')
-            desconto_nagumo = item.find(class_ = 'discount-tag')
+            desconto_outro = item.find(class_ = 'discount-tag')
+            if desconto_online:
+                desconto_nagumo = "'" + desconto_online.text + "'"
+            elif desconto_outro:
+                desconto_nagumo = "'" + desconto_outro.text + "'"
+            else:
+                desconto_nagumo = "'" + '0%' + "'"
 
             if checar_produto() != False:
-                print('Título do produto: ' + titulo_nagumo.text)
-                ws['H' + str((lista_produtos.index(produto)+3))] = titulo_nagumo.text
-
-                print('Link do produto: ' + 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1])
-                ws['I' + str((lista_produtos.index(produto)+3))] = 'http://www.nagumo.com.br' + (link_nagumo.text, link_nagumo['href'])[1]
-
-                if preco_oferta:
-                    print('Preço do produto com desconto: R$' + preco_total_nagumo.text.split('R$')[1])
-                    ws['F' + str((lista_produtos.index(produto)+3))] = preco_oferta.text
-                else:                
-                    print('Preço do produto: ' + preco_total_nagumo.text)
-                    ws['F' + str((lista_produtos.index(produto)+3))] = preco_total_nagumo.text
-                if desconto_online:
-                    print('Desconto online existente, código:' + desconto_online.text)
-                    ws['G' + str((lista_produtos.index(produto)+3))] = desconto_online.text
-                if desconto_nagumo:
-                    print('Desconto aplicado: ' + desconto_nagumo.text)
-                    ws['G' + str((lista_produtos.index(produto)+3))] = desconto_nagumo.text                    
-
+                print('Título do produto: ' + titulo_nagumo)
+                print('Link do produto: ' + link_nagumo)
+                print('Preço do produto com desconto: R$' + preco_nagumo)
+                print('Desconto aplicado: ' + desconto_nagumo)              
                 print('---------------------------------------------------')
-
+                
+                mycursor.execute(f'INSERT INTO Lista (produto, preço, desconto, dia, link) VALUES({titulo_nagumo}, {preco_nagumo}, {desconto_nagumo}, {data_hoje}, {link_nagumo})')
+                print('Dados adicionados na DB com sucesso')
+                db.commit()
                 break
-            else:
-                ws['F' + str((lista_produtos.index(produto)+3))] = '---'
-                ws['G' + str((lista_produtos.index(produto)+3))] = '---'
-                ws['H' + str((lista_produtos.index(produto)+3))] = 'Produto não encontrado'
-                ws['I' + str((lista_produtos.index(produto)+3))] = '---'
+            #else:
+                #ws['F' + str((lista_produtos.index(produto)+3))] = '---'
+                #ws['G' + str((lista_produtos.index(produto)+3))] = '---'
+                #ws['H' + str((lista_produtos.index(produto)+3))] = 'Produto não encontrado'
+                #ws['I' + str((lista_produtos.index(produto)+3))] = '---'
 
-    wb.save(filename = arquivo)
     wb.close()
+    db.close()
 
 webscrape_nagumo()
 print("--- %s seconds ---" % (time.time() - start_time))
