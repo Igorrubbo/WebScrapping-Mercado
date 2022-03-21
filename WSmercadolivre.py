@@ -8,6 +8,11 @@ from datetime import date
 #Checar tempo de execução do programa
 start_time = time.time()
 
+#Data do dia de hoje em formato dd/mm/yy
+today = date.today()
+data_hoje = today.strftime("%Y-%m-%d")
+print(data_hoje)
+
 #conexão com db do google cloud
 db = mysql.connector.connect(
     host = '34.151.251.243',
@@ -17,10 +22,6 @@ db = mysql.connector.connect(
 )
 mycursor = db.cursor()
 
-#Data do dia de hoje em formato dd/mm/yy
-today = date.today()
-data_hoje = "'" + today.strftime("%d-%m-%Y") + "'"
-
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
@@ -29,7 +30,7 @@ lista_produtos = []
 coluna_link = ws['A'][2:]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
-print(lista_produtos)
+#print(lista_produtos)
 
 
 # Pegar informações do site
@@ -73,9 +74,9 @@ def webscrape_mercadolivre():
             preco_centavos = preco.find('span', attrs={'class': "price-tag-cents"})
             # Condição para caso tenha centavos no preço
             if preco_centavos:
-                preco_mercadolivre = "'" + preco_reais.text + '.' + preco_centavos.text + "'"
+                preco_mercadolivre = preco_reais.text + '.' + preco_centavos.text
             else:
-                preco_mercadolivre = "'" + preco_reais.text + "'"
+                preco_mercadolivre = preco_reais.text
             desconto_mercadolivre_html = item.find('span', attrs={'class': 'ui-search-price__discount'})  #Se tiver desconto recolher qual é o % de desconto
             if desconto_mercadolivre_html:
                 desconto_mercadolivre = "'" + desconto_mercadolivre_html.text + "'"
@@ -85,27 +86,19 @@ def webscrape_mercadolivre():
             # Printar os dados
             if checar_produto(produto, titulo_mercadolivre) != False:
                 print("Título do produto:", titulo_mercadolivre)
-                #ws['D' + str((lista_produtos.index(produto)+3))] = titulo_mercadolivre
                 print('Preço: R$ ' + preco_mercadolivre)
-                #ws['B' + str((lista_produtos.index(produto)+3))] = preco_mercadolivre
                 print('Link do produto:' + link_mercadolivre)
-                #ws['E' + str((lista_produtos.index(produto)+3))] = link_mercadolivre
                 print(desconto_mercadolivre)
-                    #ws['C' + str((lista_produtos.index(produto)+3))] = desconto_mercadolivre
                 print('---------------------------------------------------')
-                mycursor.execute(f'INSERT INTO Lista (produto, preço, desconto, dia, link) VALUES({titulo_mercadolivre}, {preco_mercadolivre}, {desconto_mercadolivre}, STR_TO_DATE({data_hoje}, "%d-%m-%Y"), {link_mercadolivre})')
+                sql = "INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(%s, %s, %s, %s, %s, %s)"
+                values = (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre)
+                mycursor.execute(sql, values)
+                #mycursor.execute(f'INSERT INTO preços_mercadolivre (produto, titulo, preço, desconto, dia, link) VALUES({produto}, {titulo_mercadolivre}, {preco_mercadolivre}, {desconto_mercadolivre}, STR_TO_DATE({data_hoje}, "%d-%m-%Y"), {link_mercadolivre})')
                 db.commit()
-                break
-            #else:
-                #ws['B' + str((lista_produtos.index(produto)+3))] = '---'
-                #ws['C' + str((lista_produtos.index(produto)+3))] = '---'
-                #ws['D' + str((lista_produtos.index(produto)+3))] = 'Produto não encontrado'
-                #ws['E' + str((lista_produtos.index(produto)+3))] = '---'
-                
+                break                
 
 
 webscrape_mercadolivre()
-#wb.save(filename = arquivo)
 wb.close()
 db.close()
 print("--- %s seconds ---" % (time.time() - start_time))
