@@ -1,9 +1,14 @@
 import requests
-from bs4 import BeautifulSoup
-from openpyxl import Workbook, load_workbook
+import os
 import time
 import mysql.connector
+import dotenv
 from datetime import date
+from bs4 import BeautifulSoup
+from openpyxl import Workbook, load_workbook
+
+#Carregar variáveis de ambiente
+dotenv.load_dotenv(dotenv.find_dotenv())
 
 #Checar tempo de execução do programa
 start_time = time.time()
@@ -11,23 +16,24 @@ start_time = time.time()
 #Data do dia de hoje em formato dd/mm/yy
 today = date.today()
 data_hoje = today.strftime("%Y-%m-%d")
-print(data_hoje)
+
 
 #conexão com db do google cloud
 db = mysql.connector.connect(
-    host = '34.151.251.243',
-    user = 'root',
-    passwd = '459588asd',
+    host = os.getenv('DB_HOST'),
+    user = os.getenv('DB_USER'),
+    passwd = os.getenv('DB_PASSWD'),
     database = 'Teste',
 )
 mycursor = db.cursor()
+
 
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][2:]
+coluna_link = ws['A'][1:3]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
 #print(lista_produtos)
