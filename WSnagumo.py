@@ -1,12 +1,16 @@
+import mysql.connector
+import os
+import time
+import dotenv
 from bs4 import BeautifulSoup
 from openpyxl import Workbook, load_workbook
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-import mysql.connector
 from datetime import date
 
-import time
+#Carregar variáveis de ambiente
+dotenv.load_dotenv(dotenv.find_dotenv())
 
 #Checar tempo de execução do programa
 start_time = time.time()
@@ -17,9 +21,9 @@ data_hoje = today.strftime("%y-%m-%d")
 
 #conexão com db do google cloud
 db = mysql.connector.connect(
-    host = '34.151.251.243',
-    user = 'root',
-    passwd = '459588asd',
+    host = os.getenv('DB_HOST'),
+    user = os.getenv('DB_USER'),
+    passwd = os.getenv('DB_PASSWD'),
     database = 'Teste',
 )
 mycursor = db.cursor()
@@ -101,7 +105,6 @@ def webscrape_nagumo():
                 #mycursor.execute(f"INSERT INTO preços_nagumo (produto, titulo_nagumo, preço, desconto, dia, link) VALUES({produto}, {titulo_nagumo}, {preco_nagumo}, {desconto_nagumo}, {data_hoje}, {link_nagumo})")
                 db.commit()
                 break
-
 
 webscrape_nagumo()
 wb.close()
