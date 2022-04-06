@@ -27,7 +27,7 @@ connection_data = ('Driver={ODBC Driver 18 for SQL Server};Server=%s;Database=te
 
 connection_db = pyodbc.connect(connection_data)
 
-print('Connection Succesful')
+#print('Connection Succesful')
 
 mycursor = connection_db.cursor()
 
@@ -36,7 +36,7 @@ arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][1:6]
+coluna_link = ws['A'][1:]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
 
@@ -47,7 +47,7 @@ def webscrape_mercadolivre():
         url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(' ', '-') + '_OrderId_PRICE_NoIndex_True'
         response = requests.get(url_dinamica)
         site = BeautifulSoup(response.text, 'html.parser')
-        time.sleep(1)
+        time.sleep(2) #garantir que dê tempo para a página carregar
 
         # Método para pegar a classe do item (produtos diferentes tem classes diferentes)
         resultado = site.find('div', attrs={'class': 'ui-search-result__wrapper'})
@@ -94,6 +94,7 @@ def webscrape_mercadolivre():
             # Printar os dados
             if checar_produto(produto, titulo_mercadolivre) != False:
                 print("Título do produto:", titulo_mercadolivre)
+                ws['B' + str((lista_produtos.index(produto)+2))] = 'produto encontrado'
                 print('Preço: R$ ' + preco_mercadolivre)
                 print('Link do produto:' + link_mercadolivre)
                 print(desconto_mercadolivre)
@@ -102,10 +103,11 @@ def webscrape_mercadolivre():
                 # Inserir os dados no banco de dados
                 mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre))
                 mycursor.commit()
-                break                
+                break    #Sai do loop quando encontra o produto    
 
 
 webscrape_mercadolivre()
+wb.save(filename = arquivo)
 wb.close()
 mycursor.close()
 connection_db.close()
