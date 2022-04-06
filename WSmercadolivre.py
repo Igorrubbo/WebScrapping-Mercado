@@ -1,8 +1,8 @@
 import requests
 import os
 import time
-import mysql.connector
 import dotenv
+import pyodbc
 from datetime import date
 from bs4 import BeautifulSoup
 from openpyxl import Workbook, load_workbook
@@ -13,30 +13,32 @@ dotenv.load_dotenv(dotenv.find_dotenv())
 #Checar tempo de execução do programa
 start_time = time.time()
 
-#Data do dia de hoje em formato dd/mm/yy
+#Data do dia de hoje em formato yyyy/mm/dd
 today = date.today()
 data_hoje = today.strftime("%Y-%m-%d")
 
 
-#conexão com db do google cloud
-db = mysql.connector.connect(
-    host = os.getenv('DB_HOST'),
-    user = os.getenv('DB_USER'),
-    passwd = os.getenv('DB_PASSWD'),
-    database = 'Teste',
-)
-mycursor = db.cursor()
+#conexão com db do Microsoft Azure
+AZURE_USER = os.getenv('AZURE_USER')
+AZURE_PASSWD = os.getenv('AZURE_PASSWD')
+AZURE_SERVER = os.getenv('AZURE_SERVER')
 
+connection_data = ('Driver={ODBC Driver 18 for SQL Server};Server=%s;Database=teste;Uid=%s;Pwd=%s;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30') % (AZURE_SERVER, AZURE_USER, AZURE_PASSWD)
+
+connection_db = pyodbc.connect(connection_data)
+
+print('Connection Succesful')
+
+mycursor = connection_db.cursor()
 
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][1:3]
+coluna_link = ws['A'][1:6]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
-#print(lista_produtos)
 
 
 # Pegar informações do site
@@ -95,16 +97,16 @@ def webscrape_mercadolivre():
                 print('Preço: R$ ' + preco_mercadolivre)
                 print('Link do produto:' + link_mercadolivre)
                 print(desconto_mercadolivre)
+                print(data_hoje)
                 print('---------------------------------------------------')
-                sql = "INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(%s, %s, %s, %s, %s, %s)"
-                values = (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre)
-                mycursor.execute(sql, values)
-                #mycursor.execute(f'INSERT INTO preços_mercadolivre (produto, titulo, preço, desconto, dia, link) VALUES({produto}, {titulo_mercadolivre}, {preco_mercadolivre}, {desconto_mercadolivre}, STR_TO_DATE({data_hoje}, "%d-%m-%Y"), {link_mercadolivre})')
-                db.commit()
+                # Inserir os dados no banco de dados
+                mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre))
+                mycursor.commit()
                 break                
 
 
 webscrape_mercadolivre()
 wb.close()
-db.close()
+mycursor.close()
+connection_db.close()
 print("--- %s seconds ---" % (time.time() - start_time))

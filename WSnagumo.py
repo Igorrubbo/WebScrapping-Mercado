@@ -1,13 +1,14 @@
-import mysql.connector
 import os
 import time
 import dotenv
+import pyodbc
 from bs4 import BeautifulSoup
+from datetime import date
 from openpyxl import Workbook, load_workbook
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from datetime import date
+
 
 #Carregar variáveis de ambiente
 dotenv.load_dotenv(dotenv.find_dotenv())
@@ -17,23 +18,27 @@ start_time = time.time()
 
 #Data do dia de hoje em formato dd/mm/yy
 today = date.today()
-data_hoje = today.strftime("%y-%m-%d")
+data_hoje = today.strftime("%Y-%m-%d")
 
-#conexão com db do google cloud
-db = mysql.connector.connect(
-    host = 'localhost',
-    user = 'root',
-    passwd = '459588',
-    database = 'testdatabase',
-)
-mycursor = db.cursor()
+#conexão com db do Microsoft Azure
+AZURE_USER = os.getenv('AZURE_USER')
+AZURE_PASSWD = os.getenv('AZURE_PASSWD')
+AZURE_SERVER = os.getenv('AZURE_SERVER')
+
+connection_data = ('Driver={ODBC Driver 18 for SQL Server};Server=%s;Database=teste;Uid=%s;Pwd=%s;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30') % (AZURE_SERVER, AZURE_USER, AZURE_PASSWD)
+
+connection_db = pyodbc.connect(connection_data)
+
+print('Connection Succesful')
+
+mycursor = connection_db.cursor()
 
 # Carregar planilha e produtos com openpyxl
 arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][1:3]
+coluna_link = ws['A'][1:5]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
 
@@ -98,15 +103,14 @@ def webscrape_nagumo():
                 print('Link do produto: ' + link_nagumo)
                 print('Preço do produto com desconto: R$' + preco_nagumo)
                 print('Desconto aplicado: ' + desconto_nagumo)              
-                print('---------------------------------------------------')       
-                sql = "INSERT INTO preços_nagumo(produto, titulo_nagumo, preço, desconto, dia, link) values(%s, %s, %s, %s, %s, %s)"
-                values = (produto, titulo_nagumo, preco_nagumo, desconto_nagumo, data_hoje, link_nagumo)
-                mycursor.execute(sql, values)     
-                #mycursor.execute(f"INSERT INTO preços_nagumo (produto, titulo_nagumo, preço, desconto, dia, link) VALUES({produto}, {titulo_nagumo}, {preco_nagumo}, {desconto_nagumo}, {data_hoje}, {link_nagumo})")
-                db.commit()
+                print('---------------------------------------------------')
+                print(data_hoje)
+                mycursor.execute("INSERT INTO preços_nagumo(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_nagumo, preco_nagumo, desconto_nagumo, data_hoje, link_nagumo))
+                mycursor.commit()
                 break
 
 webscrape_nagumo()
 wb.close()
-db.close()
+mycursor.close()
+connection_db.close()
 print("--- %s seconds ---" % (time.time() - start_time))
