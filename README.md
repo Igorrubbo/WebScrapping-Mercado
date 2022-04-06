@@ -4,9 +4,11 @@ Esse programa ainda está em desenvolvimento.👷‍♂️👨‍💻
 
 Comecei esse projeto com três objetivos em mente: pesquisa de preço, cálculo de inflação pessoal e meu desenvolvimento pessoal em Python. 
 
-A ideia é extrair os preços dos produtos que eu e minha família consumimos com frequência dos sites do Mercado Livre e do Nagumo e realizar uma pequena análise da diferença de preços entre os produtos. As bibliotecas BeautifulSoup e Selenium são usadas para acessar, navegar e extrair os dados dos preços dos produtos que constam em uma lista em excel que é acessada por meio da biblioteca openpyxl
+Para cumprir o primeiro objetivo é necessário extrair os preços dos produtos que eu e minha família consumimos com frequência dos sites do Mercado Livre e do Nagumo e realizar uma pequena análise da diferença de preços entre os produtos. As bibliotecas BeautifulSoup e Selenium são usadas para acessar, navegar e extrair os dados dos preços dos produtos que constam em uma lista em excel que é acessada por meio da biblioteca openpyxl.  
+
 O segundo objetivo necessita apenas de uns poucos passos a mais do que o primeiro, sendo necessário uma rotina de extração de dados para se construir um banco de dados, no caso estou usando SQL Server para armazenar os dados. Para não ter que inserir os dados de forma manual no banco de dados, utilizo do pyodb para acessar o banco de dados, que está armazenado na nuvem por meio do serviço de banco de dados na nuvem do Microsoft Azure. Dessa forma, consigo automatizar esse processo de extração de dados para análise no tempo devido, provavelmente no final de cada ano.  
 
+O terceiro objetivo tem sido alcançado com sucesso, que é meu desenvolvimento como programador. Diversos desafios foram enfrentados, tecnologias novas aprendidas e a certeza de que é essa a área em que desejo passar minha vida trabalhando se estabeleceu.
 
 🛠 Ferramentas utilizadas no projeto:
 Python - Como linguagem de programação principal
