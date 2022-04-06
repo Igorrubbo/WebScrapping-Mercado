@@ -2,6 +2,8 @@
 
 Esse programa ainda está em desenvolvimento.👷‍♂️👨‍💻
 
+![](https://c.tenor.com/y2JXkY1pXkwAAAAM/cat-computer.gif)
+
 Comecei esse projeto com três objetivos em mente: pesquisa de preço, cálculo de inflação pessoal e meu desenvolvimento pessoal em Python. 
 
 Para cumprir o primeiro objetivo é necessário extrair os preços dos produtos que eu e minha família consumimos com frequência dos sites do Mercado Livre e do Nagumo e realizar uma pequena análise da diferença de preços entre os produtos. As bibliotecas BeautifulSoup e Selenium são usadas para acessar, navegar e extrair os dados dos preços dos produtos que constam em uma lista em excel que é acessada por meio da biblioteca openpyxl.  
