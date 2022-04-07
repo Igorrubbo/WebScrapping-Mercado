@@ -5,8 +5,8 @@ import dotenv
 import pyodbc
 from datetime import date
 from bs4 import BeautifulSoup
-from openpyxl import Workbook, load_workbook
-
+from openpyxl import load_workbook
+"""
 #Carregar variáveis de ambiente
 dotenv.load_dotenv(dotenv.find_dotenv())
 
@@ -36,13 +36,13 @@ arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][1:]
+coluna_link = ws['A'][1:4]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
-
+"""
 
 # Pegar informações do site
-def webscrape_mercadolivre():
+def webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws_excel):
     for produto in lista_produtos:
         url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(' ', '-') + '_OrderId_PRICE_NoIndex_True'
         response = requests.get(url_dinamica)
@@ -90,11 +90,12 @@ def webscrape_mercadolivre():
                 desconto_mercadolivre = "'" + desconto_mercadolivre_html.text + "'"
             else:
                 desconto_mercadolivre = "'0%'"
+            n_encontrado = None  # Caso produto não seja encontrado, um valor null é adicionado ao banco de dados
 
             # Printar os dados
             if checar_produto(produto, titulo_mercadolivre) != False:
+                ws_excel['B' + str((lista_produtos.index(produto)+2))] = 'produto encontrado'
                 print("Título do produto:", titulo_mercadolivre)
-                ws['B' + str((lista_produtos.index(produto)+2))] = 'produto encontrado'
                 print('Preço: R$ ' + preco_mercadolivre)
                 print('Link do produto:' + link_mercadolivre)
                 print(desconto_mercadolivre)
@@ -103,12 +104,17 @@ def webscrape_mercadolivre():
                 # Inserir os dados no banco de dados
                 mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre))
                 mycursor.commit()
-                break    #Sai do loop quando encontra o produto    
+                break    # Para o loop caso o produto tenha sido encontrado  
+            else:
+                mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, n_encontrado, n_encontrado, n_encontrado, data_hoje, n_encontrado))
+                mycursor.commit()
+                break
 
-
-webscrape_mercadolivre()
+"""
+webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws)
 wb.save(filename = arquivo)
 wb.close()
 mycursor.close()
 connection_db.close()
 print("--- %s seconds ---" % (time.time() - start_time))
+"""
