@@ -2,7 +2,9 @@
 
 Esse programa ainda está em desenvolvimento.👷‍♂️👨‍💻
 
-![](https://i.imgur.com/opq2UyM.png)
+![](https://i.imgur.com/opq2UyM.png)  
+
+Fonte: <a href="https://www.toptal.com/python/web-scraping-with-python/">toptotal.com</a>
 
 Comecei esse projeto com três objetivos em mente: pesquisa de preço, cálculo de inflação pessoal e meu desenvolvimento pessoal em Python. 
 
