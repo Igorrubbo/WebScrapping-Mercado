@@ -111,7 +111,6 @@ def webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws_excel):
             else:
                 mycursor.execute("INSERT INTO preços_nagumo(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, n_encontrado, n_encontrado, n_encontrado, data_hoje, n_encontrado))
                 mycursor.commit()
-                break
 """
 webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws)
 wb.save(filename = arquivo)

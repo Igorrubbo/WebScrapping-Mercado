@@ -44,7 +44,7 @@ for cell in coluna_link:
 # Pegar informações do site
 def webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws_excel):
     for produto in lista_produtos:
-        url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(' ', '-') + '_OrderId_PRICE_NoIndex_True'
+        url_dinamica = r'https://lista.mercadolivre.com.br/supermercado/' + produto.replace(' ', '-') + '_Frete_Full_OrderId_PRICE_NoIndex_True#applied_filter_id%3Dshipping_highlighted_fulfillment%26applied_filter_name%3DTipo+de+envio%26applied_filter_order%3D2%26applied_value_id%3Dfulfillment%26applied_value_name%3DFull%26applied_value_order%3D1%26applied_value_results%3D33%26is_custom%3Dfalse'
         response = requests.get(url_dinamica)
         site = BeautifulSoup(response.text, 'html.parser')
         time.sleep(2) #garantir que dê tempo para a página carregar
@@ -106,9 +106,8 @@ def webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws_excel):
                 mycursor.commit()
                 break    # Para o loop caso o produto tenha sido encontrado  
             else:
-                mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, n_encontrado, n_encontrado, n_encontrado, data_hoje, n_encontrado))
+                mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, n_encontrado, n_encontrado, n_encontrado, data_hoje, link_mercadolivre))
                 mycursor.commit()
-                break
 
 """
 webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws)

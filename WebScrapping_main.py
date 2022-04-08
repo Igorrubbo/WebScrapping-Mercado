@@ -36,7 +36,7 @@ arquivo = r"lista de mercado.xlsx"
 wb = load_workbook(arquivo)
 ws = wb[wb.sheetnames[0]]
 lista_produtos = []
-coluna_link = ws['A'][1:5]
+coluna_link = ws['A'][1:]
 for cell in coluna_link:
     lista_produtos.append(f'{cell.value}')
 
