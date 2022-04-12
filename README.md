@@ -37,7 +37,7 @@ Situação atual do projeto (31/03):
 - Variáveis de ambiente criadas
 
 ⏳ A ser implementado:
-- Automatização de coleta de dados por meio de recurso na nuvem
+- Automatização do script de coleta de dados por meio de recurso na nuvem
 - Realização de análise e visualização dos dados coletados
 - WebScrapping de preços de gasolina, energia e água
 - (talvez) WebScrapping de site shopper.com.br
