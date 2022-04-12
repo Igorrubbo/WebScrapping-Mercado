@@ -60,7 +60,7 @@ def webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws_excel):
         # Começar a usar o Beautiful Soup para puxar os dados
         soup_file = driver.page_source
         site_nagumo = BeautifulSoup(soup_file, 'html.parser')
-        main = site_nagumo.findAll(class_ = 'product-grid-default product-grid-default-4 content-dailySale-list-products-product')
+        itens = site_nagumo.findAll(class_ = 'product-grid-default product-grid-default-4 content-dailySale-list-products-product')
 
         # Função para procurar se o produto solicitado é o mesmo que o encontrado
         def checar_produto():
@@ -68,9 +68,14 @@ def webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws_excel):
             for palavra in nova_lista:
                 resultado = (' ' + palavra.upper() + ' ') in (' ' + titulo_html.text.upper() + ' ')
                 if resultado == False:
-                    return False
+                    break
+            return resultado
 
-        for item in main[0:6]:
+        if len(itens) < 7: #condição necessária para casos em que o site producrado tem menos de 7 produtos listados
+            i = len(itens) - 1
+        else:
+            i = 7
+        for item in itens[0:i]:
             titulo_auxiliar = item.find(class_ = 'txt-desc-product-itemtext-muted txt-desc-product-item')
             titulo_html = titulo_auxiliar.find(class_ = 'list-product-link') 
             titulo_nagumo = "'" + titulo_html.text + "'"
@@ -94,10 +99,9 @@ def webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws_excel):
                 desconto_nagumo = "'" + outro_desconto.text + "'"
             else:
                 desconto_nagumo = "'" + '0%' + "'"
-            n_encontrado = None  # Caso produto não seja encontrado, um valor null é adicionado ao banco de dados
 
             if checar_produto() != False:
-                ws_excel['C' + str((lista_produtos.index(produto)+2))] = 'produto encontrado'
+                ws_excel['C' + str((lista_produtos.index(produto)+2))] = 'produto encontrado' # Descobrir quais produtos não são encontrados
                 print('Título do produto: ' + titulo_nagumo)
                 print('Link do produto: ' + link_nagumo)
                 print('Preço do produto com desconto: R$' + preco_nagumo)
@@ -108,9 +112,9 @@ def webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws_excel):
                 mycursor.execute("INSERT INTO preços_nagumo(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_nagumo, preco_nagumo, desconto_nagumo, data_hoje, link_nagumo))
                 mycursor.commit()
                 break # Para o loop caso o produto tenha sido encontrado
-            else:
-                mycursor.execute("INSERT INTO preços_nagumo(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, n_encontrado, n_encontrado, n_encontrado, data_hoje, n_encontrado))
-                mycursor.commit()
+            if item == itens[i - (i + 1)] and checar_produto == False: # Descobrir quais produtos não são encontrados
+                ws_excel['B' + str((lista_produtos.index(produto)+2))] = url_dinamica_nagumo 
+                print(f'Produto não encontrado o link é: {url_dinamica_nagumo}]')   
 """
 webscrape_nagumo(lista_produtos, mycursor, data_hoje, ws)
 wb.save(filename = arquivo)
