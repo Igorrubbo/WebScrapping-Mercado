@@ -1,45 +1,6 @@
 import requests
-import os
 import time
-import dotenv
-import pyodbc
-from datetime import date
 from bs4 import BeautifulSoup
-from openpyxl import load_workbook
-"""
-#Carregar variáveis de ambiente
-dotenv.load_dotenv(dotenv.find_dotenv())
-
-#Checar tempo de execução do programa
-start_time = time.time()
-
-#Data do dia de hoje em formato yyyy/mm/dd
-today = date.today()
-data_hoje = today.strftime("%Y-%m-%d")
-
-
-#conexão com db do Microsoft Azure
-AZURE_USER = os.getenv('AZURE_USER')
-AZURE_PASSWD = os.getenv('AZURE_PASSWD')
-AZURE_SERVER = os.getenv('AZURE_SERVER')
-
-connection_data = ('Driver={ODBC Driver 18 for SQL Server};Server=%s;Database=teste;Uid=%s;Pwd=%s;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30') % (AZURE_SERVER, AZURE_USER, AZURE_PASSWD)
-
-connection_db = pyodbc.connect(connection_data)
-
-#print('Connection Succesful')
-
-mycursor = connection_db.cursor()
-
-# Carregar planilha e produtos com openpyxl
-arquivo = r"lista de mercado.xlsx"
-wb = load_workbook(arquivo)
-ws = wb[wb.sheetnames[0]]
-lista_produtos = []
-coluna_link = ws['A'][1:4]
-for cell in coluna_link:
-    lista_produtos.append(f'{cell.value}')
-"""
 
 # Pegar informações do site
 def webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws_excel):
@@ -108,17 +69,9 @@ def webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws_excel):
                 print(data_hoje)
                 print('---------------------------------------------------')
                 # Inserir os dados no banco de dados
-                mycursor.execute("INSERT INTO preços_mercadolivre(produto, titulo, preço, desconto, dia, link) values(?, ?, ?, ?, ?, ?)", (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre))
+                mycursor.execute("INSERT INTO preços_mercadolivre(produto_ml, titulo_ml, preço_ml, desconto_ml, dia_ml, link_ml) values(?, ?, ?, ?, ?, ?)", (produto, titulo_mercadolivre, preco_mercadolivre, desconto_mercadolivre, data_hoje, link_mercadolivre))
                 mycursor.commit()
                 break    # Para o loop caso o produto tenha sido encontrado  
             if item == itens[i - (i + 1)] and checar_produto == False: # Descobrir quais produtos não são encontrados
                 ws_excel['B' + str((lista_produtos.index(produto)+2))] = url_dinamica
-                print(f'Produto não encontrado o link é: {url_dinamica}]')      
-"""
-webscrape_mercadolivre(lista_produtos, mycursor, data_hoje, ws)
-wb.save(filename = arquivo)
-wb.close()
-mycursor.close()
-connection_db.close()
-print("--- %s seconds ---" % (time.time() - start_time))
-"""
+                print(f'Produto não encontrado o link é: {url_dinamica}]')
