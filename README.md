@@ -14,20 +14,20 @@ O segundo objetivo necessita apenas de uns poucos passos a mais do que o primeir
 
 O terceiro objetivo tem sido alcançado com sucesso, que é meu desenvolvimento como programador. Diversos desafios foram enfrentados, tecnologias novas aprendidas e a certeza de que é essa a área em que desejo passar minha vida trabalhando se estabeleceu.
 
-🛠 Ferramentas utilizadas no projeto:
-Python - Como linguagem de programação principal
-VSCode - IDE escolhido para o desenvolvimento do código
-Git - Utilizado para controle de versão e registro de atividades
-Excel - A lista de produtos a serem pesquisados se encontra em uma planilha excel
-SQL Server - Base de dados escolhida para desenvolvimento do projeto
-Microsoft Azure - Serviço em nuvem escolhido para desenvolvimento do projeto
+🛠 Ferramentas utilizadas no projeto:  
+- Python - Como linguagem de programação principal  
+- VSCode - IDE escolhido para o desenvolvimento do código  
+- Git - Utilizado para controle de versão e registro de atividades  
+- Excel - A lista de produtos a serem pesquisados se encontra em uma planilha excel  
+- SQL Server - Base de dados escolhida para desenvolvimento do projeto  
+- Microsoft Azure - Serviço em nuvem escolhido para desenvolvimento do projeto  
 
-📚 Bibliotecas utilizadas:
-Beautiful Soup e Selenium - ferramentas principais para WebScrapping
-dotenv - criação de variáveis de ambiente para tornar dados de login do servidor Azure local
-pyodb - para acessar o banco de dados do SQL Server
-openpyxl - para acessar lista de produtos
-time - informar tempo de execução dos programas
+📚 Bibliotecas utilizadas:  
+- Beautiful Soup e Selenium - ferramentas principais para WebScrapping  
+- dotenv - criação de variáveis de ambiente para tornar dados de login do servidor Azure local  
+- pyodb - para acessar o banco de dados do SQL Server  
+- openpyxl - para acessar lista de produtos  
+- time - informar tempo de execução dos programas  
 
 Situação atual do projeto (31/03):
 
